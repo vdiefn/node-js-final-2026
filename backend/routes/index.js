@@ -1,7 +1,9 @@
 const express = require("express")
 const router = express.Router()
-const healthcheckController = require("../controllers/healthcheck")
+const healthcheckRouter = require("./healthcheck")
+const coachRouter = require("./coach")
 
-router.get("/healthcheck", healthcheckController.healthcheck)
+router.use("/healthcheck", healthcheckRouter)
+router.use("/coaches", coachRouter)
 
 module.exports = router
