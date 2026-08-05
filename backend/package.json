@@ -5,7 +5,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "migration:generate": "typeorm migration:generate -d ./db/data-source.js -o",
+    "migration:run": "typeorm migration:run -d ./db/data-source.js",
+    "migration:revert": "typeorm migration:revert -d ./db/data-source.js",
+    "seed": "node db/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +18,9 @@
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "pg": "^8.22.0",
+    "typeorm": "^1.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
