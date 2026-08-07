@@ -4,6 +4,6 @@ const healthcheckRouter = require("./healthcheck")
 const coachRouter = require("./coach")
 
 router.use("/healthcheck", healthcheckRouter)
-router.use("/coaches", coachRouter)
+router.use("/api/coaches/skill", coachRouter)
 
 module.exports = router
