@@ -4,8 +4,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js",
-    "start": "node app.js",
+    "dev": "nodemon ./bin/www.js",
+    "start": "node ./bin/www.js",
     "migration:generate": "typeorm migration:generate -d ./db/data-source.js -o",
     "migration:run": "typeorm migration:run -d ./db/data-source.js",
     "migration:revert": "typeorm migration:revert -d ./db/data-source.js",
@@ -16,6 +16,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "class-validator": "^0.15.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
