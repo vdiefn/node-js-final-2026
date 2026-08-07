@@ -37,7 +37,8 @@ const createCoachSkill = async(req, res, next) => {
     const result = await skillRepo.save(newSkill)
     res.status(200).json({ status: "success", data: result })
   } catch (error) {
-
+    console.error(error)
+    next(error)
   }
 }
 
