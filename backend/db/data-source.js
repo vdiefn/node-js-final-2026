@@ -1,7 +1,8 @@
-require("dotenv").config()
-const { DataSource } = require("typeorm")
-const Skill = require("../entities/Skill")
-const CreditPackage = require("../entities/CreditPackage")
+require("dotenv").config();
+const { DataSource } = require("typeorm");
+const Skill = require("../entities/Skill");
+const CreditPackage = require("../entities/CreditPackage");
+const User = require("../entities/User");
 
 const dataSource = new DataSource({
   type: "postgres",
@@ -11,8 +12,8 @@ const dataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   synchronize: false,
-  entities:[Skill, CreditPackage],
-  migrations: ["db/migrations/*.js"]
-})
+  entities: [Skill, CreditPackage, User],
+  migrations: ["db/migrations/*.js"],
+});
 
-module.exports = { dataSource }
+module.exports = { dataSource };
