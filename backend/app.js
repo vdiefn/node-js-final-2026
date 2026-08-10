@@ -1,6 +1,7 @@
 const express = require("express")
 const cors = require("cors")
 const { dataSource } = require("./db/data-source")
+const errorHandler = require("./utils/errorHandler")
 const app = express()
 require("dotenv").config()
 
@@ -16,7 +17,14 @@ app.use((req, res) => {
 })
 app.use((err, req, res, next) => {
   console.error(err)
-  res.status(500).json({status:"error", err:err.name, message:err.message})
+
+  if(err.isOperational){
+    return res.status(err.statusCode).json({
+      status: "failed",
+      message: err.message
+    })
+  }
+  res.status(500).json({status:"error", message: "伺服器發生錯誤，請連絡相關人員"})
 })
 
 module.exports = app

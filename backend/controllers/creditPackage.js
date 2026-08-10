@@ -1,6 +1,7 @@
 const { dataSource } = require("../db/data-source");
 const creditPackageRepo = dataSource.getRepository("CreditPackage");
 const { isUUID } = require("class-validator");
+const errorHandler = require("../utils/errorHandler")
 
 const getCreditPackage = async (req, res, next) => {
   try {
@@ -28,14 +29,12 @@ const createCreditPackage = async (req, res, next) => {
     const isValidPrice = Number.isInteger(price) && price >= 0;
 
     if (!isValidName || !isValidCredit || !isValidPrice) {
-      res.status(400).json({ status: "failed", message: "欄位未填寫正確" });
-      return;
+      return next(errorHandler(400, "欄位未填寫正確"))
     }
 
     const isDuplicate = await creditPackageRepo.existsBy({ name });
     if (isDuplicate) {
-      res.status(400).json({ status: "failed", message: "資料重複" });
-      return;
+      return next(errorHandler(400, "資料重複"))
     }
 
     const newPackage = await creditPackageRepo.save({
@@ -56,13 +55,11 @@ const deleteCreditPackage = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!isUUID(id)) {
-      res.status(400).json({ status: "failed", message: "錯誤的id資訊" });
-      return;
+      return next(errorHandler(400, "錯誤的id資訊"))
     }
     const result = await creditPackageRepo.delete(id);
     if (result.affected === 0) {
-      res.status(400).json({ status: "failed", message: "ID錯誤" });
-      return;
+      return next(errorHandler(400, "ID錯誤"))
     }
 
     res.status(200).json({
