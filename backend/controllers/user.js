@@ -20,11 +20,15 @@ function hasDigit(s){
 }
 
 function validLength(s){
-  return typeof s === "string" && s.length >= 8 && s.length <= 16;
+  return typeof s === "string" && s.trim().length >= 8 && s.trim().length <= 16;
 }
 
 function checkPassword(password){
   return hasUpperCase(password) && hasLowerCase(password) && hasDigit(password) && validLength(password)
+}
+
+function isValidString(s){
+  return s.trim().length > 0
 }
 
 const userSignUp = async(req, res, next) => {
@@ -58,17 +62,13 @@ const userSignUp = async(req, res, next) => {
   }
 }
 
-function isValidString(s){
-  return s.trim().length > 0
-}
-
 const userLogin = async(req, res, next) => {
     const { email, password } = req.body
     if (!isValidString(email) || !isValidString(password)) {
       return next(errorHandler(400, "欄位未填寫正確"));
     }
 
-    if(!hasUpperCase(password)|| !hasLowerCase(password) || !hasDigit(password) || !validLength(password)){
+    if(!checkPassword(password)){
       return next(errorHandler(400, "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字"));
     }
 
@@ -130,11 +130,81 @@ const getUserProfile = async(req, res, next) => {
 }
 
 const updateUserName = async(req, res, next) => {
+  const { name } = req.body
+  if(!name || name.trim().length === 0 || typeof name !== "string"){
+    return next(errorHandler(400, "欄位未填寫正確"))
+  }
 
+  const newName = name.trim()
+
+  try {
+    const target = await userRepo.findOne({where:{id: req.user.id}})
+    if(target.name === newName){
+      return next(errorHandler(400, "使用者名稱未變更"))
+    }
+
+    const result = await userRepo.update(
+      { id: req.user.id },
+      { name: newName }
+    )
+    if(result.affected === 0){
+      return next(errorHandler(400, "更新使用者資料失敗"))
+    }
+    res.status(200).json({ status:"success", data: { user: { name: newName }}})
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
 }
 
 const updateUserPassword = async(req, res, next) => {
+  const { password, new_password, confirm_new_password } = req.body
 
+  const isValidPassword = checkPassword(password) && isValidString(password)
+  const isValidNewPassword = checkPassword(new_password) && isValidString(new_password)
+  const isValidConfirmNewPassword = checkPassword(confirm_new_password) && isValidString(confirm_new_password)
+
+  if(!isValidPassword || !isValidNewPassword || !isValidConfirmNewPassword){
+    return next(errorHandler(400, "欄位未填寫正確"))
+  }
+
+  if(new_password.trim() !== confirm_new_password.trim()){
+    return next(errorHandler(400, "新密碼與驗證新密碼不一致"))
+  }
+
+  try {
+    const target = await userRepo.findOne({where:{id:req.user.id}})
+    if (!target) {
+      return next(errorHandler(404, "使用者不存在"));
+    }
+
+    const isMatch = await bcrypt.compare(password, target.password)
+    if(!isMatch){
+      return next(errorHandler(400, "密碼輸入錯誤"))
+    }
+
+    const isSamePassword = await bcrypt.compare(new_password.trim(), target.password)
+    if(isSamePassword){
+      return next(errorHandler(400, "新密碼不能與舊密碼相同"))
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    const hashPassword = await bcrypt.hash(new_password.trim(), salt)
+
+    const result = await userRepo.update(
+      {id: req.user.id},
+      {password: hashPassword}
+    )
+
+    if(result.affected === 0){
+      return next(errorHandler(400, "更新使用者資料失敗"))
+    }
+
+    res.status(200).json({status:"success", data:null})
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
 }
 
 module.exports = {
