@@ -94,6 +94,7 @@ const userLogin = async(req, res, next) => {
         expiresIn: process.env.JWT_EXPIRES_DAY
       }
     )
+
     res.status(201).json({
       status:"success",
       data: {
