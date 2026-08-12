@@ -3,6 +3,8 @@ const { DataSource } = require("typeorm");
 const Skill = require("../entities/Skill");
 const CreditPackage = require("../entities/CreditPackage");
 const User = require("../entities/User");
+const Coach = require("../entities/Coach")
+const CoachSkill = require("../entities/CoachSkill")
 
 const dataSource = new DataSource({
   type: "postgres",
@@ -12,7 +14,7 @@ const dataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   synchronize: false,
-  entities: [Skill, CreditPackage, User],
+  entities: [Skill, CreditPackage, User, Coach, CoachSkill],
   migrations: ["db/migrations/*.js"],
 });
 
