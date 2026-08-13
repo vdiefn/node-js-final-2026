@@ -171,7 +171,8 @@ const createCourse = async(req, res, next) => {
   }
 
   const newCourse = courseRepo.create({
-    skill_id: skill_id.trim(),
+    skill: {id:skill_id.trim()},
+    coach: {id: req.coach.id},
     name: name.trim(),
     description: description.trim(),
     start_at,
@@ -185,11 +186,97 @@ const createCourse = async(req, res, next) => {
 }
 
 const getCourseDetail = async(req, res, next) => {
+  const courseId = req.params.courseId
+  const userId = req.user.id
 
+  const courseDetail = await courseRepo.findOne({
+    where: {
+      id: courseId,
+      coach: { user: {id: userId}}
+    },
+    relations: {skill:true}
+  })
+
+  if(!courseDetail){
+    return next(errorHandler(400, "課程不存在"))
+  }
+
+  const {id, name, status, start_at, end_at, max_participants, participants, meeting_url, created_at, updated_at} = courseDetail
+
+  res.status(200).json({
+    status:"success",
+    data: {
+      id,
+      name,
+      status,
+      start_at,
+      end_at,
+      max_participants,
+      participants,
+      meeting_url,
+      created_at,
+      updated_at,
+      skill_id: courseDetail.skill.id,
+      skill_name: courseDetail.skill.name
+    }
+  })
 }
 
 const updateCourseDetail = async(req, res, next) => {
+  const courseId = req.params.courseId
+  const userId = req.user.id
+  const { skill_id, name, description, start_at, end_at, max_participants, meeting_url } = req.body
 
+  if(!validation.isValidString(skill_id)||
+    !validation.isValidString(name)||
+    !validation.isValidString(description) ||
+    !validation.isValidTimestamp(start_at) ||
+    !validation.isValidTimestamp(end_at)||
+    !validation.isValidNumber(max_participants)||
+    !validation.isValidUrl(meeting_url)
+  ){
+    return next(errorHandler(400, "欄位未填寫正確"))
+  }
+
+  const courseDetail = await courseRepo.findOne({
+    where:{
+      id: courseId,
+      coach: {  user: { id: userId}}
+    }
+  })
+  if(!courseDetail){
+    return next(errorHandler(400, "課程不存在"))
+  }
+
+  const updatedCourse = await courseRepo.save(
+    {
+      id: courseId,
+      skill: {id: skill_id.trim()},
+      name: name.trim(),
+      description: description.trim(),
+      start_at,
+      end_at,
+      max_participants,
+      meeting_url
+    }
+  )
+
+  const courseData = await courseRepo.findOne({
+    where: {id: courseId, coach: {user: {id:userId}}},
+    relations: { skill: true, coach:true}
+  })
+
+  const { skill, coach, ...rawData} = courseData
+  return res.status(200).json({
+    status:"success",
+    data: {
+      course: {
+        ...rawData,
+        skill_id: skill.id,
+        user_id: coach.id
+      }
+    }
+  })
 }
 
 
