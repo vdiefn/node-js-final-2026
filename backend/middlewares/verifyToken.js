@@ -15,9 +15,9 @@ const verifyToken = (req, res, next) => {
     next()
   } catch (error) {
     if(error.name === "TokenExpiredError"){
-      return next(errorHandler(401, "token已過期"))
+      return next(errorHandler(401, "Token 已過期"))
     } else if(error.name === "JsonWebTokenError"){
-      return next(errorHandler(401, "token 無效"))
+      return next(errorHandler(401, "無效的 token"))
     } else {
       return next(errorHandler(401, "身份驗證失敗"))
     }
