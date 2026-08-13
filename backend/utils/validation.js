@@ -1,5 +1,3 @@
-
-
 const isValidString = (s) => {
   return typeof s === "string" && s.trim().length > 0
 }
@@ -13,7 +11,7 @@ const isValidUrl = (url) => {
   if(typeof url !== "string" || url.trim().length === 0 ){
     return false
   }
-  if(!url.trim().toLowerCase().startsWith("https")){
+  if(!url.trim().toLowerCase().startsWith("https://")){
     return false
   }
   return true
@@ -26,10 +24,23 @@ const isValidSkill = (skills) => {
   return skills.every((item) => isValidString(item));
 }
 
+const isValidTimestamp = (dateString) => {
+  if (typeof dateString !== "string") return false;
+
+  const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
+  if (!isoPattern.test(dateString)) {
+    return false;
+  }
+
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+}
+
 module.exports = {
   isValidString,
   isValidNumber,
   isValidUrl,
-  isValidSkill
+  isValidSkill,
+  isValidTimestamp
 }
 

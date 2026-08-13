@@ -4,6 +4,8 @@ const validation = require("../utils/validation")
 const coachRepo = dataSource.getRepository("Coach")
 const userRepo = dataSource.getRepository("User")
 const coachSkillRepo = dataSource.getRepository("CoachSkill")
+const courseRepo = dataSource.getRepository("Course")
+const skillRepo = dataSource.getRepository("Skill")
 
 const createCoach = async(req, res, next) => {
   const { userId } = req.params
@@ -138,14 +140,48 @@ const updateCoach = async(req, res, next) => {
 
 const getCoachCourse = async(req, res, next) => {
   const coachId = req.coach.id
-  const skills = await coachSkillRepo.find({
-    where: {coach_id: coachId},
-    relations: {skill: true}
+  const courses = await courseRepo.find({
+    where: {coach: {id:coachId}},
   })
+  res.status(200).json({ status:"success", data: courses })
 }
 
 const createCourse = async(req, res, next) => {
+  const { skill_id, name, description, start_at, end_at, max_participants, meeting_url } = req.body
 
+  if(!validation.isValidString(skill_id)||
+    !validation.isValidString(name) ||
+    !validation.isValidString(description) ||
+    !validation.isValidTimestamp(start_at)||
+    !validation.isValidTimestamp(end_at)||
+    !validation.isValidNumber(max_participants) ||
+    !validation.isValidUrl(meeting_url)
+  ){
+    return next(errorHandler(400, "欄位未填寫正確"))
+  }
+
+  const hasName = await courseRepo.existsBy({name})
+  if(hasName){
+    return next(errorHandler(400, "課程名稱已存在"))
+  }
+
+  const hasSkill = await skillRepo.existsBy({id:skill_id})
+  if(!hasSkill){
+    return next(errorHandler(400, "請先建立該技能"))
+  }
+
+  const newCourse = courseRepo.create({
+    skill_id: skill_id.trim(),
+    name: name.trim(),
+    description: description.trim(),
+    start_at,
+    end_at,
+    max_participants,
+    meeting_url:meeting_url.trim()
+  })
+  const result = await courseRepo.save(newCourse)
+
+  res.status(201).json({status:"success", data: { course: result }})
 }
 
 const getCourseDetail = async(req, res, next) => {

@@ -8,7 +8,7 @@ router.get("/", verifyToken, isCoachAuth, coachController.getCoach)
 router.put("/", verifyToken, coachController.updateCoach)
 
 router.get("/courses", verifyToken, isCoachAuth, coachController.getCoachCourse)
-router.post("/courses", coachController.createCourse)
+router.post("/courses", verifyToken, isCoachAuth, coachController.createCourse)
 
 router.get("/courses/:courseId", coachController.getCourseDetail)
 router.put("/courses/:courseId", coachController.updateCourseDetail)
