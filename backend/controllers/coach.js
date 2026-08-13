@@ -20,80 +20,68 @@ const createCoach = async(req, res, next) => {
     return next(errorHandler(400, "欄位未填寫正確"))
   }
 
-  try {
-    const target = await userRepo.findOne({where: {id:userId}})
-    if(!target){
-      return next(errorHandler(400, "userId 查無此使用者"))
-    }
-
-    if(target.role === "COACH"){
-      return next(errorHandler(409, "使用者已經是教練"))
-    }
-
-    await userRepo.update({ id:userId }, { role:"COACH" })
-
-    const newCoach = coachRepo.create({
-      user: { id : userId },
-      experience_years,
-      description: description.trim(),
-      profile_image_url:profile_image_url? profile_image_url.trim(): null
-    })
-    await coachRepo.save(newCoach)
-
-    const { user, ...coachDate } = newCoach
-
-    res.status(201).json({
-      status:"success",
-      data: {
-        user: {
-          name: target.name,
-          role: "COACH"
-        },
-        coach: {
-          ...coachDate,
-          user_id: userId
-        }
-      }
-    })
-
-  } catch (error) {
-    console.error(error)
-    next(error)
+  const target = await userRepo.findOne({where: {id:userId}})
+  if(!target){
+    return next(errorHandler(400, "userId 查無此使用者"))
   }
+
+  if(target.role === "COACH"){
+    return next(errorHandler(409, "使用者已經是教練"))
+  }
+
+  await userRepo.update({ id:userId }, { role:"COACH" })
+
+  const newCoach = coachRepo.create({
+    user: { id : userId },
+    experience_years,
+    description: description.trim(),
+    profile_image_url:profile_image_url? profile_image_url.trim(): null
+  })
+  const savedCoach = await coachRepo.save(newCoach)
+
+  const { user, ...coachDate } = newCoach
+
+  res.status(201).json({
+    status:"success",
+    data: {
+      user: {
+        name: target.name,
+        role: "COACH"
+      },
+      coach: {
+        id: savedCoach.id,
+        user_id: userId,
+        experience_years: savedCoach.experience_years,
+        description: savedCoach.description,
+        profile_image_url: savedCoach.profile_image_url,
+        created_at: savedCoach.created_at,
+        updated_at: savedCoach.updated_at
+      }
+    }
+  })
 }
 
 const getCoach = async(req, res, next) => {
-  try {
-    const userId = req.user.id
+  const userId = req.user.id
+  const targetCoach = await coachRepo.findOne({where: {user:{id: userId}}})
 
-    const targetCoach = await coachRepo.findOne({where: {user:{id: userId}}})
+  const coachSkills = await coachSkillRepo.find({
+    where: {coach: {id: targetCoach.id}},
+    relations: { skill: true}
+  })
 
-    if (!targetCoach) {
-      return next(errorHandler(400, "使用者尚未成為教練"));
+  const skill_ids = coachSkills.map(item => item.skill.id)
+
+  res.status(200).json({
+    status:"success",
+    data: {
+      id: targetCoach.id,
+      experience_years: targetCoach.experience_years,
+      description: targetCoach.description,
+      profile_image_url: targetCoach.profile_image_url,
+      skill_ids
     }
-
-    const coachSkills = await coachSkillRepo.find({
-      where: {coach: {id: targetCoach.id}},
-      relations: { skill: true}
-    })
-
-    const skill_ids = coachSkills.map(item => item.skill.id)
-
-    res.status(200).json({
-      success:"success",
-      data: {
-        id: targetCoach.id,
-        experience_years: targetCoach.experience_years,
-        description: targetCoach.description,
-        profile_image_url: targetCoach.profile_image_url,
-        skill_ids
-      }
-    })
-
-  } catch (error) {
-    console.error(error)
-    next(error)
-  }
+  })
 }
 
 const updateCoach = async(req, res, next) => {
@@ -108,54 +96,52 @@ const updateCoach = async(req, res, next) => {
     return next(errorHandler(400, "欄位未填寫正確"))
   }
 
-  try {
-    const targetUser = await userRepo.findOne({where:{id}})
-    if(!targetUser || targetUser.role !== "COACH"){
-      return next(errorHandler(401, "使用者尚未成為教練"))
-    }
-
-    const targetCoach = await coachRepo.findOne({where: {user: {id}}})
-    if(!targetCoach){
-      return next(errorHandler(400, "找不到教練資料"))
-    }
-
-    await coachRepo.update(targetCoach.id, {
-      experience_years,
-      description: description.trim(),
-      profile_image_url: profile_image_url.trim(),
-    })
-
-    await coachSkillRepo.delete( { coach: {id: targetCoach.id}})
-
-    const newSkill = await skill_ids.map(skillId => {
-      coachSkillRepo.create({
-        coach: {id: targetCoach.id},
-        skill: {id: skillId}
-      })
-    })
-
-    await coachSkillRepo.save(newSkill)
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        id: targetCoach.id,
-        experience_years,
-        description,
-        profile_image_url,
-        skill_ids
-      }
-    })
-
-  } catch (error) {
-    console.log(error)
-    next(error)
+  const targetUser = await userRepo.findOne({where:{id}})
+  if(!targetUser || targetUser.role !== "COACH"){
+    return next(errorHandler(401, "使用者尚未成為教練"))
   }
+
+  const targetCoach = await coachRepo.findOne({where: {user: {id}}})
+  if(!targetCoach){
+    return next(errorHandler(400, "找不到教練資料"))
+  }
+
+  await coachRepo.update(targetCoach.id, {
+    experience_years,
+    description: description.trim(),
+    profile_image_url: profile_image_url.trim(),
+  })
+
+  await coachSkillRepo.delete( { coach: {id: targetCoach.id}})
+
+  const newSkill = await skill_ids.map(skillId => {
+    return coachSkillRepo.create({
+      coach: {id: targetCoach.id},
+      skill: {id: skillId}
+    })
+  })
+
+  await coachSkillRepo.save(newSkill)
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      id: targetCoach.id,
+      experience_years,
+      description,
+      profile_image_url,
+      skill_ids
+    }
+  })
 
 }
 
 const getCoachCourse = async(req, res, next) => {
-
+  const coachId = req.coach.id
+  const skills = await coachSkillRepo.find({
+    where: {coach_id: coachId},
+    relations: {skill: true}
+  })
 }
 
 const createCourse = async(req, res, next) => {
