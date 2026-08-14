@@ -28,6 +28,16 @@ const getCourses = async(req, res, next) => {
   res.status(200).json({status:"success", data})
 }
 
+const bookCourse = async(req, res, next) => {
+
+}
+
+const cancelCourse = async(req, res, next) => {
+
+}
+
 module.exports = {
-  getCourses
+  getCourses,
+  bookCourse,
+  cancelCourse
 }
