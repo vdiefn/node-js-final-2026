@@ -9,5 +9,6 @@ router.get("/profile", verifyToken, userController.getUserProfile);
 router.put("/profile", verifyToken, userController.updateUserName);
 router.put("/password", verifyToken, userController.updateUserPassword);
 router.get("/credit-package", userController.getUserCreditPackage)
+router.get("/courses", userController.getUserCourses)
 
 module.exports = router;

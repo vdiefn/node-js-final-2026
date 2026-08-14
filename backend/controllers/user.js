@@ -167,11 +167,16 @@ const getUserCreditPackage = async(req, res, next) => {
 
 }
 
+const getUserCourses = async(req, res, next) => {
+
+}
+
 module.exports = {
   userSignUp,
   userLogin,
   getUserProfile,
   updateUserName,
   updateUserPassword,
-  getUserCreditPackage
+  getUserCreditPackage,
+  getUserCourses
 }
