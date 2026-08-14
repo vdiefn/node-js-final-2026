@@ -61,8 +61,13 @@ const deleteCreditPackage = async (req, res, next) => {
   });
 };
 
+const purchaseCreditPackage = async (req, res, next) => {
+
+}
+
 module.exports = {
   getCreditPackage,
   createCreditPackage,
   deleteCreditPackage,
+  purchaseCreditPackage
 };

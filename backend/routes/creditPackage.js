@@ -5,5 +5,6 @@ const creditPackageController = require("../controllers/creditPackage")
 router.get("/", creditPackageController.getCreditPackage)
 router.post("/", creditPackageController.createCreditPackage)
 router.delete("/:id", creditPackageController.deleteCreditPackage)
+router.post("/:creditPackageId", creditPackageController.purchaseCreditPackage)
 
 module.exports = router
