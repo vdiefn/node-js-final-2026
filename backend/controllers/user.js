@@ -3,36 +3,9 @@ const userRepo = dataSource.getRepository("User")
 const errorHandler = require("../utils/errorHandler")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-
-function hasUpperCase(s){
-  const regex = /[A-Z]/
-  return regex.test(s)
-}
-
-function hasLowerCase(s){
-  const regex = /[a-z]/
-  return regex.test(s)
-}
-
-function hasDigit(s){
-  const regex = /[\d]/
-  return regex.test(s)
-}
-
-function validLength(s){
-  return typeof s === "string" && s.trim().length >= 8 && s.trim().length <= 16;
-}
-
-function checkPassword(password){
-  return hasUpperCase(password) && hasLowerCase(password) && hasDigit(password) && validLength(password)
-}
-
-function isValidString(s){
-  return s.trim().length > 0
-}
+const validation = require("../utils/validation")
 
 const userSignUp = async(req, res, next) => {
-
   const { name, email, password } = req.body
 
   const requireFields = ["name", "email", "password"]
@@ -41,7 +14,7 @@ const userSignUp = async(req, res, next) => {
     return next(errorHandler(400, "欄位未填寫正確"))
   }
 
-  const isValidPassword = checkPassword(password)
+  const isValidPassword = validation.checkPassword(password)
   if(!isValidPassword){
     return next(errorHandler(400, "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字"))
   }
@@ -61,11 +34,11 @@ const userSignUp = async(req, res, next) => {
 
 const userLogin = async(req, res, next) => {
   const { email, password } = req.body
-  if (!isValidString(email) || !isValidString(password)) {
+  if (!validation.isValidString(email) || !validation.isValidString(password)) {
     return next(errorHandler(400, "欄位未填寫正確"));
   }
 
-  if(!checkPassword(password)){
+  if(!validation.checkPassword(password)){
     return next(errorHandler(400, "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字"));
   }
 
@@ -148,9 +121,9 @@ const updateUserName = async(req, res, next) => {
 const updateUserPassword = async(req, res, next) => {
   const { password, new_password, confirm_new_password } = req.body
 
-  const isValidPassword = checkPassword(password) && isValidString(password)
-  const isValidNewPassword = checkPassword(new_password) && isValidString(new_password)
-  const isValidConfirmNewPassword = checkPassword(confirm_new_password) && isValidString(confirm_new_password)
+  const isValidPassword = validation.checkPassword(password) && validation.isValidString(password)
+  const isValidNewPassword = validation.checkPassword(new_password) && validation.isValidString(new_password)
+  const isValidConfirmNewPassword = validation.checkPassword(confirm_new_password) && validation.isValidString(confirm_new_password)
 
   if(!isValidPassword || !isValidNewPassword || !isValidConfirmNewPassword){
     return next(errorHandler(400, "欄位未填寫正確"))

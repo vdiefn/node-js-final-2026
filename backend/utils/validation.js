@@ -2,7 +2,6 @@ const isValidString = (s) => {
   return typeof s === "string" && s.trim().length > 0
 }
 
-
 const isValidNumber = (num) => {
   return typeof num === "number" && num >= 0 && Number.isInteger(num)
 }
@@ -36,11 +35,36 @@ const isValidTimestamp = (dateString) => {
   return !isNaN(date.getTime());
 }
 
+const checkPassword = (password) =>{
+  function hasUpperCase(s){
+    const regex = /[A-Z]/
+    return regex.test(s)
+  }
+
+  function hasLowerCase(s){
+    const regex = /[a-z]/
+    return regex.test(s)
+  }
+
+  function hasDigit(s){
+    const regex = /[\d]/
+    return regex.test(s)
+  }
+
+  function validLength(s){
+    return typeof s === "string" && s.trim().length >= 8 && s.trim().length <= 16;
+  }
+
+  return hasUpperCase(password) && hasLowerCase(password) && hasDigit(password) && validLength(password)
+}
+
+
 module.exports = {
   isValidString,
   isValidNumber,
   isValidUrl,
   isValidSkill,
-  isValidTimestamp
+  isValidTimestamp,
+  checkPassword
 }
 
