@@ -163,10 +163,15 @@ const updateUserPassword = async(req, res, next) => {
   res.status(200).json({status:"success", data:null})
 }
 
+const getUserCreditPackage = async(req, res, next) => {
+
+}
+
 module.exports = {
   userSignUp,
   userLogin,
   getUserProfile,
   updateUserName,
-  updateUserPassword
+  updateUserPassword,
+  getUserCreditPackage
 }
