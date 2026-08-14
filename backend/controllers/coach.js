@@ -1,9 +1,12 @@
 const { dataSource } = require("../db/data-source")
+const { isUUID } = require("class-validator")
+const { MoreThanOrEqual } = require("typeorm")
 const errorHandler = require("../utils/errorHandler")
 const validation = require("../utils/validation")
 const coachRepo = dataSource.getRepository("Coach")
 const coachSkillRepo = dataSource.getRepository("CoachSkill")
-const { isUUID } = require("class-validator")
+const courseRepo = dataSource.getRepository("Course")
+
 
 const getCoaches = async(req, res, next) => {
   const { per, page } = req.query
@@ -82,7 +85,40 @@ const getCoachDetail = async(req, res, next) => {
   res.status(200).json({status:"success", data:coachData})
 }
 
-const getOneCoachCourse = (req, res, next) => {
+const getOneCoachCourse = async(req, res, next) => {
+  const { coachId } = req.params
+
+  if(!isUUID(coachId)){
+    return next(errorHandler(400, "欄位未填寫正確"))
+  }
+
+  const hasCoach = await coachRepo.existsBy({id:coachId})
+  if(!hasCoach){
+    return next(errorHandler(400, "查無此教練"))
+  }
+
+  const coursesData = await courseRepo.find({
+    where: {
+      end_at: MoreThanOrEqual(new Date()),
+      coach: {id: coachId}
+    },
+    relations: { coach: {user: true}, skill:true}
+  })
+
+  const data = coursesData.map(item => {
+    return {
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      start_at: item.start_at,
+      end_at: item.end_at,
+      max_participants: item.max_participants,
+      coach_name: item.coach.user.name,
+      skill_name: item.skill.name
+    }
+  })
+
+  res.status(200).json({status:"success", data})
 
 }
 
