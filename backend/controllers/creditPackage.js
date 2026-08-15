@@ -1,7 +1,9 @@
 const { dataSource } = require("../db/data-source");
 const creditPackageRepo = dataSource.getRepository("CreditPackage");
+const creditPurchaseRepo = dataSource.getRepository("CreditPurchase");
 const { isUUID } = require("class-validator");
-const errorHandler = require("../utils/errorHandler")
+const errorHandler = require("../utils/errorHandler");
+const validation = require("../utils/validation");
 
 const getCreditPackage = async (req, res, next) => {
   const packages = await creditPackageRepo.find({
@@ -23,12 +25,12 @@ const createCreditPackage = async (req, res, next) => {
   const isValidPrice = Number.isInteger(price) && price >= 0;
 
   if (!isValidName || !isValidCredit || !isValidPrice) {
-    return next(errorHandler(400, "欄位未填寫正確"))
+    return next(errorHandler(400, "欄位未填寫正確"));
   }
 
   const isDuplicate = await creditPackageRepo.existsBy({ name });
   if (isDuplicate) {
-    return next(errorHandler(400, "資料重複"))
+    return next(errorHandler(400, "資料重複"));
   }
 
   const newPackage = await creditPackageRepo.save({
@@ -39,17 +41,16 @@ const createCreditPackage = async (req, res, next) => {
   const result = await creditPackageRepo.create(newPackage);
 
   res.status(200).json({ status: "success", data: result });
-
 };
 
 const deleteCreditPackage = async (req, res, next) => {
   const { id } = req.params;
   if (!isUUID(id)) {
-    return next(errorHandler(400, "錯誤的id資訊"))
+    return next(errorHandler(400, "錯誤的id資訊"));
   }
   const result = await creditPackageRepo.delete(id);
   if (result.affected === 0) {
-    return next(errorHandler(400, "ID錯誤"))
+    return next(errorHandler(400, "ID錯誤"));
   }
 
   res.status(200).json({
@@ -62,12 +63,34 @@ const deleteCreditPackage = async (req, res, next) => {
 };
 
 const purchaseCreditPackage = async (req, res, next) => {
+  const { creditPackageId } = req.params;
+  const userId = req.user.id;
 
-}
+  if (!validation.isValidString(creditPackageId) || !isUUID(creditPackageId)) {
+    return next(errorHandler(400, "欄位未填寫正確"));
+  }
+
+  const targetPackage = await creditPackageRepo.findOne({ where: { id: creditPackageId } });
+  if (!targetPackage) {
+    return next(errorHandler(400, "ID錯誤"));
+  }
+
+  const newPurchase = creditPurchaseRepo.create({
+    user: { id: userId },
+    creditPackage: { id: targetPackage.id },
+    purchased_credit: targetPackage.credit_amount,
+    price_paid: targetPackage.price,
+    purchased_at: new Date(),
+  });
+
+  await creditPurchaseRepo.save(newPurchase);
+
+  res.status(200).json({ status: "success", data: null });
+};
 
 module.exports = {
   getCreditPackage,
   createCreditPackage,
   deleteCreditPackage,
-  purchaseCreditPackage
+  purchaseCreditPackage,
 };
