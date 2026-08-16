@@ -1,27 +1,42 @@
+const VALID_MONTHS = [
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
+];
+
 const isValidString = (s) => {
-  return typeof s === "string" && s.trim().length > 0
-}
+  return typeof s === "string" && s.trim().length > 0;
+};
 
 const isValidNumber = (num) => {
-  return typeof num === "number" && num >= 0 && Number.isInteger(num)
-}
+  return typeof num === "number" && num >= 0 && Number.isInteger(num);
+};
 
 const isValidUrl = (url) => {
-  if(typeof url !== "string" || url.trim().length === 0 ){
-    return false
+  if (typeof url !== "string" || url.trim().length === 0) {
+    return false;
   }
-  if(!url.trim().toLowerCase().startsWith("https://")){
-    return false
+  if (!url.trim().toLowerCase().startsWith("https://")) {
+    return false;
   }
-  return true
-}
+  return true;
+};
 
 const isValidSkill = (skills) => {
-  if(!Array.isArray(skills) || skills.length === 0 ){
-    return false
+  if (!Array.isArray(skills) || skills.length === 0) {
+    return false;
   }
   return skills.every((item) => isValidString(item));
-}
+};
 
 const isValidTimestamp = (dateString) => {
   if (typeof dateString !== "string") return false;
@@ -33,31 +48,38 @@ const isValidTimestamp = (dateString) => {
 
   const date = new Date(dateString);
   return !isNaN(date.getTime());
-}
+};
 
-const checkPassword = (password) =>{
-  function hasUpperCase(s){
-    const regex = /[A-Z]/
-    return regex.test(s)
+const checkPassword = (password) => {
+  function hasUpperCase(s) {
+    const regex = /[A-Z]/;
+    return regex.test(s);
   }
 
-  function hasLowerCase(s){
-    const regex = /[a-z]/
-    return regex.test(s)
+  function hasLowerCase(s) {
+    const regex = /[a-z]/;
+    return regex.test(s);
   }
 
-  function hasDigit(s){
-    const regex = /[\d]/
-    return regex.test(s)
+  function hasDigit(s) {
+    const regex = /[\d]/;
+    return regex.test(s);
   }
 
-  function validLength(s){
+  function validLength(s) {
     return typeof s === "string" && s.trim().length >= 8 && s.trim().length <= 16;
   }
 
-  return hasUpperCase(password) && hasLowerCase(password) && hasDigit(password) && validLength(password)
-}
+  return hasUpperCase(password) && hasLowerCase(password) && hasDigit(password) && validLength(password);
+};
 
+const isValidMonth = (m) => {
+  if (!isValidString(m)) {
+    return false;
+  }
+
+  return VALID_MONTHS.includes(m.trim().toLowerCase());
+};
 
 module.exports = {
   isValidString,
@@ -65,6 +87,6 @@ module.exports = {
   isValidUrl,
   isValidSkill,
   isValidTimestamp,
-  checkPassword
-}
-
+  checkPassword,
+  isValidMonth,
+};
