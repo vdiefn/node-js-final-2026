@@ -49,7 +49,6 @@ const bookCourse = async (req, res, next) => {
     where: {
       course: { id: courseId },
       user: { id: userId },
-      cancelled_at: IsNull(),
     },
   });
   if (hasBooked) {
@@ -101,7 +100,27 @@ const bookCourse = async (req, res, next) => {
   res.status(201).json({ status: "success", data: null });
 };
 
-const cancelCourse = async (req, res, next) => {};
+const cancelCourse = async (req, res, next) => {
+  const userId = req.user.id;
+  const { courseId } = req.params;
+
+  const target = await courseBookingRepo.findOne({
+    where: {
+      user: { id: userId },
+      course: { id: courseId },
+      cancelled_at: IsNull(),
+    },
+  });
+
+  if (!target) {
+    return next(errorHandler(400, "ID錯誤"));
+  }
+
+  target.cancelled_at = new Date();
+  await courseBookingRepo.save(target);
+
+  res.status(200).json({ status: "success", data: null });
+};
 
 module.exports = {
   getCourses,
