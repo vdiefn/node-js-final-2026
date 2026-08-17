@@ -7,6 +7,7 @@ const userRouter = require("./user")
 const adminCoachRouter = require("./adminCoach")
 const coachRouter = require("./coach")
 const courseRouter = require("./course")
+const uploadRouter = require("./upload")
 
 router.use("/healthcheck", healthcheckRouter)
 router.use("/api/coaches/skill", skillRouter)
@@ -15,5 +16,6 @@ router.use("/api/users", userRouter)
 router.use("/api/admin/coaches", adminCoachRouter)
 router.use("/api/coaches", coachRouter)
 router.use("/api/courses", courseRouter)
+router.use("/api/upload", uploadRouter)
 
 module.exports = router
