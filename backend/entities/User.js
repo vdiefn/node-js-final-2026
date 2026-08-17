@@ -32,6 +32,11 @@ module.exports = new EntitySchema({
       nullable: false,
       default: "USER",
     },
+    image_url: {
+      type: "varchar",
+      length: 2048,
+      nullable:true
+    },
     created_at: {
       type: "timestamp",
       createDate: true,
