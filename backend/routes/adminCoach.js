@@ -15,7 +15,7 @@ router.put("/courses/:courseId", verifyToken, adminCoachController.updateCourseD
 
 router.post("/:userId", adminCoachController.createCoach)
 
-router.get("/revenue", verifyToken, isCoachAuth, adminCoachContorller.getRevenue)
+router.get("/revenue", verifyToken, isCoachAuth, adminCoachController.getRevenue)
 
 
 

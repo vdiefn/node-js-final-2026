@@ -5,7 +5,10 @@ const coachRepo = dataSource.getRepository("Coach");
 const userRepo = dataSource.getRepository("User");
 const coachSkillRepo = dataSource.getRepository("CoachSkill");
 const courseRepo = dataSource.getRepository("Course");
+const courseBookingRepo = dataSource.getRepository("CourseBooking")
 const skillRepo = dataSource.getRepository("Skill");
+const creditPackageRepo = dataSource.getRepository("CreditPackage")
+const { Between, IsNull } = require("typeorm")
 
 const createCoach = async (req, res, next) => {
   const { userId } = req.params;
@@ -283,13 +286,69 @@ const updateCourseDetail = async (req, res, next) => {
   });
 };
 
-const getRevenu = async (req, res, next) => {
-  const { coachId } = req.coach.id;
+const getRevenue = async (req, res, next) => {
+  const coachId = req.coach.id;
   const { month } = req.query;
 
-  if (!validation.isValidMonth(month)) {
+  const MONTH_MAP = {
+    january: 0,
+    february: 1,
+    march: 2,
+    april: 3,
+    may: 4,
+    june: 5,
+    july: 6,
+    august: 7,
+    september: 8,
+    october: 9,
+    november: 10,
+    december: 11,
+  };
+
+  if (!validation.isValidMonth(month.trim().toLowerCase())) {
     return next(errorHandler(400, "欄位未填寫正確"));
   }
+
+  const monthIndex = MONTH_MAP[month]
+  const year = new Date().getFullYear()
+  const startDate = new Date(year, monthIndex, 1, 0, 0, 0, 0)
+  const endDate = new Date(year, monthIndex+1, 0, 23, 59, 59, 999 )
+
+  const data = await courseBookingRepo.find({
+    where:{
+      created_at: Between(startDate, endDate),
+      course: { coach: { id: coachId}},
+      cancelled_at: IsNull()
+    },
+    relations: { course: true, user: true}
+  })
+
+  let participants = 0
+  let revenue = 0
+  let course_count = 0
+
+  if(data.length > 0){
+    const packageData = await creditPackageRepo.find()
+    const totalPrice = packageData.reduce((acc,cur) => acc+=Number(cur.price), 0)
+    const totalCredits = packageData.reduce((acc, cur) => acc+= Number(cur.credit_amount), 0)
+    const unitPrice = totalCredits > 0 ? totalPrice/totalCredits : 0
+    revenue = Math.floor(unitPrice * data.length)
+    const uniqueUserId = new Set(data.map(i => i.user.id))
+    participants = uniqueUserId.size
+    course_count = data.length
+  }
+
+
+  res.status(200).json({
+    status:"success",
+    data : {
+      total: {
+        revenue,
+        participants,
+        course_count
+      }
+    }
+  })
 };
 
 module.exports = {
