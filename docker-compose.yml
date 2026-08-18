@@ -58,23 +58,17 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    env_file:
-      - path: ./backend/.env
-        required: false
     environment: # 需要哪些變數？可根據 .env.example 對照補齊
       - PORT=8080
-      - DB_HOST=postgres
+      - DB_HOST=postgres # ← 容器內用服務名，不是 localhost
       - DB_PORT=5432
-      - DB_USERNAME=${secrets.DB_USERNAME}
-      - DB_PASSWORD=${secrets.DB_PASSWORD}
-      - DB_DATABASE=${secrets.DB_DATABASE}
-      - JWT_SECRET=${secrets.JWT_SECRET}
-      - JWT_EXPIRES_DAY=${secrets.JWT_EXPIRES_DAY}
-      - DB_SYNCHRONIZE=${secrets.DB_SYNCHRONIZE}
-      - DB_ENABLE_SSL=${secrets.DB_ENABLE_SSL}
-      - CLOUDINARY_NAME=${secrets.CLOUDINARY_NAME}
-      - CLOUDINARY_API_KEY=${secrets.CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${secrets.CLOUDINARY_API_SECRET}
+      - DB_USERNAME=student
+      - DB_PASSWORD=student666
+      - DB_DATABASE=fitness
+      - JWT_SECRET=hexschool2026finalproject
+      - JWT_EXPIRES_DAY=30d
+      - DB_SYNCHRONIZE=true
+      - DB_ENABLE_SSL=false
     # …其餘 DB_ 連線資訊與 JWT 設定自行補上
     depends_on:
       postgres:
