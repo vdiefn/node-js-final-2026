@@ -16,7 +16,7 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  synchronize: false,
+  synchronize: process.env.DB_SYNCHRONIZE,
   entities: [Skill, CreditPackage, User, Coach, CoachSkill, Course, CreditPurchase, CourseBooking],
   migrations: ["db/migrations/*.js"],
 });
